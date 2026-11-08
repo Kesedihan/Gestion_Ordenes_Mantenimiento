@@ -1,0 +1,10 @@
+{
+  "name": "SGML - Operario",
+  "short_name": "SGML",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#f4f6f5",
+  "theme_color": "#1f6f5c",
+  "icons": [{ "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

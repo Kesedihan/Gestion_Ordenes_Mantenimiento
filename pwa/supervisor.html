@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>SGML · Revisión de actividades</title>
+  <style>
+    :root { --verde:#1f6f5c; --fondo:#f4f6f5; --gris:#5b6470; --borde:#d6ddda;
+      --rojo:#b3261e; --ambar:#8a5900; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:#1c2321; background:var(--fondo);
+      font-family:system-ui,-apple-system,Roboto,sans-serif; }
+    header { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between;
+      align-items:center; gap:12px; padding:14px max(16px,calc((100% - 1050px)/2));
+      background:var(--verde); color:white; }
+    header h1 { margin:0; font-size:19px; }
+    header p { margin:3px 0 0; font-size:13px; }
+    button,input,select,textarea { font:inherit; }
+    button { min-height:40px; padding:8px 14px; border:0; border-radius:7px;
+      background:var(--verde); color:white; font-weight:650; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    button.secundario { border:1px solid var(--borde); background:white; color:#27312e; }
+    main { width:min(1050px,100%); margin:auto; padding:20px 16px 48px; }
+    .barra { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin-bottom:16px;
+      padding:16px; border:1px solid #e4e9e7; border-radius:10px; background:white; }
+    .barra label { display:grid; gap:5px; font-size:14px; font-weight:650; }
+    input,textarea { min-height:42px; padding:8px 10px; border:1px solid var(--borde); border-radius:7px; }
+    .estado-carga { color:var(--gris); font-size:14px; }
+    .mensaje { margin-bottom:14px; padding:12px; border-radius:8px; }
+    .mensaje[hidden] { display:none; }
+    .mensaje.error { background:#fbe9e8; color:var(--rojo); }
+    .mensaje.ok { background:#e2f2eb; color:#14543e; }
+    .tarjeta { margin:0 0 16px; padding:17px; border:1px solid #e4e9e7;
+      border-radius:10px; background:white; box-shadow:0 1px 3px #0000000c; }
+    .cabecera { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; }
+    h2 { margin:0; font-size:18px; }
+    .sub { margin:5px 0 12px; color:var(--gris); font-size:14px; }
+    .fotos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .foto { min-width:0; }
+    .foto h3 { margin:0 0 6px; font-size:14px; }
+    .foto img { display:block; width:100%; aspect-ratio:4/3; object-fit:cover;
+      border:1px solid var(--borde); border-radius:7px; background:#eef1ef; }
+    .foto .error-foto { color:var(--rojo); font-size:12px; }
+    .revision { display:grid; grid-template-columns:1fr auto auto; align-items:end;
+      gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid #e8ecea; }
+    .observacion { display:grid; gap:5px; font-size:14px; font-weight:650; }
+    .acciones { display:contents; }
+    .rechazar { background:#a92b26; }
+    .vacio { padding:34px 16px; text-align:center; color:var(--gris); background:white;
+      border:1px solid #e4e9e7; border-radius:10px; }
+    @media (max-width:620px) {
+      header { padding:12px 16px; }
+      .fotos { grid-template-columns:1fr; }
+      .foto img { max-height:320px; }
+      .revision { grid-template-columns:1fr 1fr; }
+      .observacion { grid-column:1 / -1; }
+      .revision button { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>SGML · Revisión de actividades</h1><p>Supervisor</p></div>
+    <button class="secundario" id="cerrar-sesion" type="button">Cerrar sesión</button>
+  </header>
+  <main>
+    <section class="barra">
+      <label for="fecha">Fecha de actividades<input id="fecha" type="date"></label>
+      <button id="actualizar" type="button">Actualizar</button>
+      <span class="estado-carga" id="actualizado">Cargando actividades…</span>
+    </section>
+    <div class="mensaje" id="mensaje" role="status" aria-live="polite" hidden></div>
+    <section id="actividades" aria-live="polite"></section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/supervisor.js"></script>
+</body>
+</html>

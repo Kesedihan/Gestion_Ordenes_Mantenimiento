@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>SGML · Programación semanal</title>
+  <style>
+    :root { --verde:#1f6f5c; --fondo:#f4f6f5; --gris:#5b6470; --borde:#d6ddda;
+      --rojo:#b3261e; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:#1c2321; background:var(--fondo);
+      font-family:system-ui,-apple-system,Roboto,sans-serif; }
+    header { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between;
+      align-items:center; gap:12px; padding:14px max(16px,calc((100% - 1120px)/2));
+      background:var(--verde); color:white; }
+    header h1 { margin:0; font-size:19px; }
+    header p { margin:3px 0 0; font-size:13px; }
+    button,input,select,textarea { font:inherit; }
+    button { min-height:40px; padding:8px 14px; border:0; border-radius:7px;
+      background:var(--verde); color:white; font-weight:650; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    button.secundario { border:1px solid var(--borde); background:white; color:#27312e; }
+    button.publicar { background:#235d87; }
+    main { width:min(1120px,100%); margin:auto; padding:20px 16px 48px; }
+    .mensaje { margin-bottom:14px; padding:12px; border-radius:8px; }
+    .mensaje[hidden] { display:none; }
+    .mensaje.error { background:#fbe9e8; color:var(--rojo); }
+    .mensaje.ok { background:#e2f2eb; color:#14543e; }
+    .tarjeta { margin:0 0 18px; padding:18px; border:1px solid #e4e9e7;
+      border-radius:10px; background:white; box-shadow:0 1px 3px #0000000c; }
+    .encabezado { display:flex; justify-content:space-between; align-items:center; gap:12px;
+      margin-bottom:13px; }
+    h2 { margin:0; font-size:19px; }
+    .ayuda { color:var(--gris); font-size:14px; }
+    .rejilla { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .campo { display:grid; align-content:start; gap:5px; font-size:14px; font-weight:650; }
+    .campo input,.campo select,.campo textarea {
+      width:100%; min-height:42px; padding:8px 10px; border:1px solid var(--borde);
+      border-radius:7px; background:white; color:#1c2321;
+    }
+    .campo textarea { resize:vertical; }
+    .acciones { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    .tabla { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:14px; }
+    th,td { padding:10px 8px; border-bottom:1px solid #e8ecea; vertical-align:top; }
+    th { color:#43504b; font-size:12px; text-transform:uppercase; }
+    .estado { display:inline-block; padding:4px 8px; border-radius:999px;
+      background:#eef1ef; color:#46504c; font-size:12px; font-weight:700; }
+    .estado.PUBLICADA { background:#e2f2eb; color:#14543e; }
+    .estado.BORRADOR { background:#fff4d6; color:#704900; }
+    .lista-asignaciones { display:grid; gap:7px; margin:0; padding:0; list-style:none; }
+    .asignacion { display:flex; justify-content:space-between; gap:8px; padding:9px;
+      border:1px solid #e8ecea; border-radius:7px; font-size:14px; }
+    .asignacion button { min-height:32px; padding:4px 8px; }
+    .vacio { padding:24px; text-align:center; color:var(--gris); }
+    @media (max-width:860px) { .rejilla { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:520px) {
+      header { padding:12px 16px; }
+      .rejilla { grid-template-columns:1fr; }
+      .tarjeta { padding:14px; }
+      .encabezado { align-items:flex-start; flex-direction:column; }
+      .asignacion { align-items:flex-start; flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>SGML · Programación semanal</h1><p>Administrador</p></div>
+    <button class="secundario" id="cerrar-sesion" type="button">Cerrar sesión</button>
+  </header>
+  <main>
+    <div class="mensaje" id="mensaje" role="status" aria-live="polite" hidden></div>
+    <section class="tarjeta">
+      <div class="encabezado">
+        <div><h2>Crear borrador semanal</h2>
+          <div class="ayuda">Selecciona el lunes de la semana y añade una o más asignaciones antes de guardar.</div>
+        </div>
+      </div>
+      <form id="form-asignacion">
+        <div class="rejilla">
+          <label class="campo" for="semana-inicio">Semana (lunes)
+            <input id="semana-inicio" type="date" required>
+          </label>
+          <label class="campo" for="operario">Operario
+            <select id="operario" required></select>
+          </label>
+          <label class="campo" for="centro">Centro
+            <select id="centro" required></select>
+          </label>
+          <label class="campo" for="fecha-asignacion">Día de trabajo
+            <input id="fecha-asignacion" type="date" required>
+          </label>
+          <label class="campo" for="servicio">Servicio
+            <input id="servicio" maxlength="30" placeholder="Ej. PINTURA" required>
+          </label>
+          <label class="campo" for="descripcion">Descripción
+            <input id="descripcion" maxlength="300" required>
+          </label>
+        </div>
+        <div class="acciones">
+          <button type="submit">Añadir asignación</button>
+          <button class="secundario" id="limpiar-asignaciones" type="button">Limpiar asignaciones</button>
+        </div>
+      </form>
+      <ul class="lista-asignaciones" id="asignaciones"></ul>
+      <button id="guardar-borrador" type="button" disabled>Guardar borrador</button>
+    </section>
+
+    <section class="tarjeta">
+      <div class="encabezado">
+        <div><h2>Programaciones</h2><div class="ayuda">Al publicar, las asignaciones quedan bloqueadas y pasan a la app del operario.</div></div>
+        <button class="secundario" id="actualizar" type="button">Actualizar listado</button>
+      </div>
+      <div class="tabla">
+        <table>
+          <thead><tr><th>Semana</th><th>Estado</th><th>Asignaciones</th><th>Publicación</th><th>Acción</th></tr></thead>
+          <tbody id="filas-programaciones"></tbody>
+        </table>
+        <div class="vacio" id="sin-programaciones" hidden>No hay programaciones registradas.</div>
+      </div>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/programacion.js"></script>
+</body>
+</html>

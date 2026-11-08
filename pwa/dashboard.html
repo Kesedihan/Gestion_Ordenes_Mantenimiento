@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>SGML · Tablero de seguimiento</title>
+  <style>
+    :root { --verde:#1f6f5c; --fondo:#f4f6f5; --gris:#5b6470; --borde:#d6ddda;
+      --rojo:#b3261e; --ambar:#8a5900; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:#1c2321; background:var(--fondo);
+      font-family:system-ui,-apple-system,Roboto,sans-serif; }
+    header { position:sticky; top:0; z-index:1; display:flex; justify-content:space-between;
+      align-items:center; gap:12px; padding:14px max(16px,calc((100% - 1180px)/2));
+      background:var(--verde); color:white; }
+    header h1 { margin:0; font-size:19px; }
+    header p { margin:3px 0 0; font-size:13px; }
+    .acciones { display:flex; align-items:center; gap:8px; }
+    .enlace { padding:8px 12px; border:1px solid #ffffff99; border-radius:7px;
+      color:white; font-size:14px; text-decoration:none; }
+    button,input { font:inherit; }
+    button { min-height:40px; padding:8px 14px; border:0; border-radius:7px;
+      background:var(--verde); color:white; font-weight:650; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:wait; }
+    button.secundario { border:1px solid var(--borde); background:white; color:#27312e; }
+    main { width:min(1180px,100%); margin:auto; padding:20px 16px 48px; }
+    .barra { display:flex; flex-wrap:wrap; align-items:end; gap:12px; margin-bottom:16px;
+      padding:16px; border:1px solid #e4e9e7; border-radius:10px; background:white; }
+    .barra label { display:grid; gap:5px; font-size:14px; font-weight:650; }
+    input, select { min-height:42px; padding:8px 10px; border:1px solid var(--borde); border-radius:7px; }
+    .estado-carga { color:var(--gris); font-size:14px; }
+    .mensaje { margin-bottom:14px; padding:12px; border-radius:8px; }
+    .mensaje[hidden] { display:none; }
+    .mensaje.error { background:#fbe9e8; color:var(--rojo); }
+    .resumen { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .indicador { padding:14px; border:1px solid #e4e9e7; border-radius:9px; background:white; }
+    .indicador strong { display:block; color:var(--verde); font-size:23px; }
+    .indicador span { color:var(--gris); font-size:13px; }
+    .alerta { margin-bottom:12px; padding:12px; border:1px solid #e8c879; border-radius:8px;
+      background:#fff4d6; color:#704900; }
+    .alerta[hidden] { display:none; }
+    .operario { margin-bottom:16px; padding:16px; border:1px solid #e4e9e7;
+      border-radius:10px; background:white; box-shadow:0 1px 3px #0000000c; }
+    .operario h2 { margin:0; font-size:18px; }
+    .horas { display:flex; flex-wrap:wrap; gap:12px 22px; margin:9px 0 14px; color:#3e4945; font-size:14px; }
+    .turno { padding:8px 10px; border-radius:7px; background:#f4f6f5; }
+    .actividad { padding:13px 0; border-top:1px solid #e8ecea; }
+    .actividad h3 { margin:0 0 4px; font-size:15px; }
+    .detalle { margin:0 0 10px; color:var(--gris); font-size:13px; }
+    .estado { display:inline-block; padding:3px 8px; border-radius:999px; background:#eef1ef;
+      color:#46504c; font-size:12px; font-weight:700; }
+    .estado.FINALIZADA { background:#e5efff; color:#234a86; }
+    .estado.ACEPTADA { background:#e2f2eb; color:#14543e; }
+    .estado.RECHAZADA { background:#fbe9e8; color:#a51d19; }
+    .miniaturas { display:flex; flex-wrap:wrap; gap:8px; }
+    .miniatura { width:112px; padding:0; overflow:hidden; border:1px solid var(--borde);
+      background:#eef1ef; color:#1c2321; }
+    .miniatura img { display:block; width:110px; height:76px; object-fit:cover; }
+    .miniatura span { display:block; padding:4px; font-size:11px; }
+    .sin-fotos { color:var(--gris); font-size:13px; }
+    .vacio { padding:32px 16px; text-align:center; color:var(--gris); background:white;
+      border:1px solid #e4e9e7; border-radius:10px; }
+    dialog { width:min(850px,calc(100% - 24px)); padding:12px; border:0; border-radius:10px;
+      background:#111; box-shadow:0 12px 40px #0006; }
+    dialog::backdrop { background:#14201caa; }
+    dialog img { display:block; max-width:100%; max-height:80vh; margin:auto; }
+    dialog button { display:block; margin:0 0 10px auto; }
+    @media (max-width:600px) {
+      header { padding:12px 16px; }
+      .acciones { flex-wrap:wrap; justify-content:flex-end; }
+      .resumen { grid-template-columns:1fr; gap:8px; }
+      .indicador { padding:10px 12px; }
+      .indicador strong { display:inline; margin-right:6px; font-size:19px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>SGML · Seguimiento</h1><p id="rol-titulo">Tablero operativo</p></div>
+    <nav class="acciones">
+      <a class="enlace" id="enlace-operarios" href="/app/backoffice.html" hidden>Operarios</a>
+      <a class="enlace" id="enlace-programacion" href="/app/programacion.html" hidden>Programación</a>
+      <button class="secundario" id="cerrar-sesion" type="button">Cerrar sesión</button>
+    </nav>
+  </header>
+  <main>
+    <section class="barra">
+      <label for="fecha">Fecha<input id="fecha" type="date"></label>
+      <label for="filtro-centro">Conjunto
+        <select id="filtro-centro"><option value="">Todos los conjuntos</option></select>
+      </label>
+      <button id="actualizar" type="button">Actualizar</button>
+      <span class="estado-carga" id="actualizado">Cargando seguimiento…</span>
+    </section>
+    <div class="mensaje" id="mensaje" role="status" aria-live="polite" hidden></div>
+    <div class="resumen" id="resumen"></div>
+    <div class="alerta" id="alerta-reloj" role="alert" hidden></div>
+    <section id="jornadas" aria-live="polite"></section>
+  </main>
+  <dialog id="visor-foto">
+    <button class="secundario" id="cerrar-foto" type="button">Cerrar</button>
+    <img id="foto-ampliada" alt="Evidencia de actividad">
+  </dialog>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>SGML · Gestión de operarios</title>
+  <style>
+    :root {
+      --verde:#1f6f5c;
+      --verde-oscuro:#185849;
+      --fondo:#f4f6f5;
+      --gris:#5b6470;
+      --borde:#d6ddda;
+      --rojo:#b3261e;
+      --ambar:#8a5900;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; color:#1c2321; background:var(--fondo);
+      font-family:system-ui,-apple-system,Roboto,sans-serif; }
+    header { position:sticky; top:0; z-index:1; display:flex; align-items:center;
+      justify-content:space-between; gap:16px; padding:14px max(16px, calc((100% - 1180px)/2));
+      background:var(--verde); color:#fff; }
+    header h1 { margin:0; font-size:19px; }
+    header p { margin:3px 0 0; font-size:13px; opacity:.9; }
+    .acciones-fila { display:flex; align-items:center; gap:8px; }
+    .enlace-programacion { padding:8px 12px; border:1px solid #ffffff99; border-radius:7px;
+      color:white; font-size:14px; text-decoration:none; }
+    button, input, select { font:inherit; }
+    button { min-height:40px; padding:8px 14px; border:0; border-radius:7px;
+      background:var(--verde); color:#fff; font-weight:650; cursor:pointer; }
+    button:hover { background:var(--verde-oscuro); }
+    button:disabled { opacity:.6; cursor:wait; }
+    button.secundario { border:1px solid var(--borde); background:#fff; color:#27312e; }
+    button.secundario:hover { background:#edf2f0; }
+    button.peligro { border:1px solid #e8b8b5; background:#fff; color:var(--rojo); }
+    button.peligro:hover { background:#fff2f1; }
+    main { width:min(1180px,100%); margin:auto; padding:22px 16px 48px; }
+    .mensaje { margin:0 0 16px; padding:12px 14px; border-radius:8px; }
+    .mensaje[hidden] { display:none; }
+    .mensaje.error { background:#fbe9e8; color:var(--rojo); }
+    .mensaje.ok { background:#e2f2eb; color:#14543e; }
+    .tarjeta { margin:0 0 20px; padding:18px; border:1px solid #e4e9e7;
+      border-radius:10px; background:#fff; box-shadow:0 1px 3px #0000000c; }
+    .encabezado-tarjeta { display:flex; justify-content:space-between; align-items:center;
+      gap:12px; margin-bottom:14px; }
+    h2 { margin:0; font-size:19px; }
+    .ayuda { color:var(--gris); font-size:14px; }
+    .rejilla { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+    .campo label, fieldset legend { display:block; margin-bottom:5px; font-size:14px; font-weight:650; }
+    .campo input { width:100%; min-height:42px; padding:8px 10px; border:1px solid var(--borde);
+      border-radius:7px; background:#fff; }
+    .campo input:focus, button:focus-visible { outline:3px solid #95cabb; outline-offset:2px; }
+    fieldset { margin:16px 0 0; padding:10px 12px 12px; border:1px solid var(--borde);
+      border-radius:8px; }
+    .especialidades { display:flex; flex-wrap:wrap; gap:8px 16px; }
+    .especialidades label { display:flex; align-items:center; gap:6px; font-size:14px; }
+    .acciones-form { display:flex; gap:8px; margin-top:16px; }
+    .tabla-contenedor { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; text-align:left; font-size:14px; }
+    th, td { padding:11px 9px; border-bottom:1px solid #e8ecea; vertical-align:middle; }
+    th { color:#43504b; font-size:12px; text-transform:uppercase; letter-spacing:.03em; }
+    .estado { display:inline-block; padding:4px 8px; border-radius:999px;
+      font-size:12px; font-weight:700; white-space:nowrap; }
+    .estado.activo { background:#e2f2eb; color:#14543e; }
+    .estado.inactivo { background:#f1f2f2; color:#59615e; }
+    .acciones-fila { display:flex; flex-wrap:wrap; gap:6px; }
+    .acciones-fila button { min-height:34px; padding:5px 9px; font-size:13px; white-space:nowrap; }
+    .vacio { padding:20px; text-align:center; color:var(--gris); }
+    dialog { width:min(440px,calc(100% - 28px)); padding:0; border:0; border-radius:10px;
+      box-shadow:0 12px 40px #0004; }
+    dialog::backdrop { background:#14201c88; }
+    .dialogo-contenido { padding:20px; }
+    .dialogo-contenido h2 { margin-bottom:6px; }
+    .dialogo-contenido .campo { margin-top:14px; }
+    @media (max-width:760px) {
+      header { padding:12px 16px; }
+      .acciones-fila { flex-wrap:wrap; justify-content:flex-end; }
+      .rejilla { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      table { min-width:850px; }
+    }
+    @media (max-width:480px) {
+      .rejilla { grid-template-columns:1fr; }
+      .tarjeta { padding:14px; }
+      .encabezado-tarjeta { align-items:flex-start; flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>SGML · Hojas de vida</h1>
+      <p id="usuario-rol">Gestión de operarios</p>
+    </div>
+    <div class="acciones-fila">
+      <a class="enlace-programacion" id="enlace-programacion" href="/app/programacion.html" hidden>Programación</a>
+      <button class="secundario" id="cerrar-sesion" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+  <main>
+    <div class="mensaje" id="mensaje" role="status" aria-live="polite" hidden></div>
+
+    <section class="tarjeta" aria-labelledby="titulo-registro">
+      <div class="encabezado-tarjeta">
+        <div>
+          <h2 id="titulo-registro">Registrar operario</h2>
+          <div class="ayuda">Los campos con * son obligatorios. Correo institucional: @mantenimiento.com.co</div>
+        </div>
+      </div>
+      <form id="form-registro">
+        <div class="rejilla">
+          <div class="campo">
+            <label for="documento">Documento *</label>
+            <input id="documento" name="documento" inputmode="numeric" pattern="[0-9]{6,12}"
+              minlength="6" maxlength="12" required>
+          </div>
+          <div class="campo">
+            <label for="nombres">Nombres *</label>
+            <input id="nombres" name="nombres" autocomplete="given-name" required>
+          </div>
+          <div class="campo">
+            <label for="apellidos">Apellidos *</label>
+            <input id="apellidos" name="apellidos" autocomplete="family-name" required>
+          </div>
+          <div class="campo">
+            <label for="telefono">Teléfono *</label>
+            <input id="telefono" name="telefono" type="tel" autocomplete="tel" required>
+          </div>
+          <div class="campo">
+            <label for="correo">Correo institucional *</label>
+            <input id="correo" name="correo_institucional" type="email"
+              pattern="[A-Za-z0-9._%+\-]+@mantenimiento\.com\.co"
+              title="Usa una dirección @mantenimiento.com.co"
+              autocomplete="email" required>
+          </div>
+          <div class="campo">
+            <label for="fecha-ingreso">Fecha de ingreso *</label>
+            <input id="fecha-ingreso" name="fecha_ingreso" type="date" required>
+          </div>
+        </div>
+        <fieldset>
+          <legend>Especialidades * (selecciona al menos una)</legend>
+          <div class="especialidades">
+            <label><input type="checkbox" name="especialidades" value="PISCINA"> Piscina</label>
+            <label><input type="checkbox" name="especialidades" value="PINTURA"> Pintura</label>
+            <label><input type="checkbox" name="especialidades" value="JARDINERIA"> Jardinería</label>
+            <label><input type="checkbox" name="especialidades" value="ASEO_GENERAL"> Aseo general</label>
+            <label><input type="checkbox" name="especialidades" value="ELECTRICIDAD"> Electricidad</label>
+            <label><input type="checkbox" name="especialidades" value="PLOMERIA"> Plomería</label>
+          </div>
+        </fieldset>
+        <div class="acciones-form">
+          <button id="registrar" type="submit">Guardar operario</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="titulo-listado">
+      <div class="encabezado-tarjeta">
+        <div>
+          <h2 id="titulo-listado">Operarios</h2>
+          <div class="ayuda" id="total-operarios">Cargando listado…</div>
+        </div>
+        <button class="secundario" id="actualizar-listado" type="button">Actualizar listado</button>
+      </div>
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Operario</th><th>Documento</th><th>Contacto</th>
+              <th>Fecha de ingreso</th><th>Estado</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="filas-operarios"></tbody>
+        </table>
+        <div class="vacio" id="sin-operarios" hidden>No hay operarios para mostrar.</div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="dialogo-contacto" aria-labelledby="titulo-contacto">
+    <form class="dialogo-contenido" id="form-contacto">
+      <h2 id="titulo-contacto">Editar contacto</h2>
+      <p class="ayuda" id="nombre-contacto"></p>
+      <div class="campo">
+        <label for="telefono-contacto">Teléfono *</label>
+        <input id="telefono-contacto" name="telefono" type="tel" required>
+      </div>
+      <div class="campo">
+        <label for="correo-contacto">Correo institucional *</label>
+        <input id="correo-contacto" name="correo_institucional" type="email"
+          pattern="[A-Za-z0-9._%+\-]+@mantenimiento\.com\.co"
+          title="Usa una dirección @mantenimiento.com.co" required>
+      </div>
+      <div class="acciones-form">
+        <button type="submit">Guardar cambios</button>
+        <button class="secundario" id="cancelar-contacto" type="button">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="js/admin.js"></script>
+</body>
+</html>

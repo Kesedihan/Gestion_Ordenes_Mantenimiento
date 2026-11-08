@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f6f5c">
+  <title>SGML · Iniciar sesión</title>
+  <style>
+    :root { color-scheme: light; --verde:#1f6f5c; --fondo:#f4f6f5; --rojo:#b3261e; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px;
+      font-family:system-ui,-apple-system,Roboto,sans-serif; color:#1c2321; background:var(--fondo); }
+    main { width:min(100%,400px); padding:28px; background:#fff; border-radius:12px;
+      box-shadow:0 2px 12px #0002; }
+    h1 { margin:0 0 8px; color:var(--verde); font-size:24px; }
+    p { margin:0 0 22px; color:#5b6470; }
+    label { display:block; margin:14px 0 6px; font-weight:600; }
+    input { width:100%; min-height:46px; padding:10px 12px; border:1px solid #c8cfcc;
+      border-radius:8px; font:inherit; }
+    button { width:100%; min-height:48px; margin-top:20px; border:0; border-radius:8px;
+      background:var(--verde); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+    button:disabled { opacity:.65; cursor:wait; }
+    #mensaje { min-height:1.5em; margin-top:14px; color:var(--rojo); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SGML</h1>
+    <p>Ingresa con tu cuenta institucional.</p>
+    <form id="form-login">
+      <label for="usuario">Usuario</label>
+      <input id="usuario" name="username" autocomplete="username" required>
+      <label for="contrasena">Contraseña</label>
+      <input id="contrasena" name="password" type="password"
+        autocomplete="current-password" required>
+      <button id="enviar" type="submit">Iniciar sesión</button>
+      <div id="mensaje" role="alert" aria-live="polite"></div>
+    </form>
+  </main>
+  <script src="js/auth.js"></script>
+</body>
+</html>
