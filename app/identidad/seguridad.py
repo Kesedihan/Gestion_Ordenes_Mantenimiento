@@ -76,6 +76,21 @@ class ServicioIdentidad:
         }
 
     def validar_access_token(self, token: str) -> Usuario | None:
+        usuario = self._validar_token(token, "access")
+        return usuario
+
+    def renovar_access_token(self, token: str) -> dict | None:
+        usuario = self._validar_token(token, "refresh")
+        if usuario is None:
+            return None
+        ahora = datetime.now(timezone.utc)
+        return {
+            "access_token": self._generar_token(usuario, "access", ahora, DURACION_ACCESS),
+            "token_type": "bearer",
+            "expires_in": int(DURACION_ACCESS.total_seconds()),
+        }
+
+    def _validar_token(self, token: str, tipo_esperado: str) -> Usuario | None:
         try:
             claims = jwt.decode(
                 token,
@@ -85,7 +100,7 @@ class ServicioIdentidad:
             )
         except InvalidTokenError:
             return None
-        if claims.get("type") != "access":
+        if claims.get("type") != tipo_esperado:
             return None
 
         usuario = self._repositorio.obtener_por_nombre(claims["sub"])

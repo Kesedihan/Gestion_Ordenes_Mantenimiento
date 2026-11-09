@@ -54,6 +54,34 @@ def test_login_emite_access_y_refresh_con_rol(identidad):
     assert datetime.fromtimestamp(access["exp"], timezone.utc) > datetime.now(timezone.utc)
 
 
+def test_refresh_renueva_access_y_no_acepta_access_token_como_refresh(identidad):
+    cliente, _, usuario = identidad
+    tokens = cliente.post(
+        "/api/auth/token",
+        data={"username": usuario.nombre_usuario, "password": "clave-segura"},
+    ).json()
+
+    renovacion = cliente.post(
+        "/api/auth/refresh",
+        json={"refresh_token": tokens["refresh_token"]},
+    )
+    assert renovacion.status_code == 200
+    nuevos_tokens = renovacion.json()
+    assert nuevos_tokens["expires_in"] == 15 * 60
+    assert "refresh_token" not in nuevos_tokens
+    respuesta = cliente.get(
+        "/api/jornada/revisiones",
+        headers={"Authorization": f"Bearer {nuevos_tokens['access_token']}"},
+    )
+    assert respuesta.status_code == 200
+
+    token_access_usado_como_refresh = cliente.post(
+        "/api/auth/refresh",
+        json={"refresh_token": tokens["access_token"]},
+    )
+    assert token_access_usado_como_refresh.status_code == 401
+
+
 def test_login_y_script_se_publican_desde_la_pwa(identidad):
     cliente, *_ = identidad
 
@@ -88,7 +116,11 @@ def test_login_y_script_se_publican_desde_la_pwa(identidad):
         == 200
     )
     assert 'id="form-login"' in pagina.text
+    assert 'id="recordarme"' in pagina.text
     assert "/api/auth/token" in script.text
+    auth_session = cliente.get("/app/js/auth-session.js")
+    assert auth_session.status_code == 200
+    assert "/api/auth/refresh" in auth_session.text
     assert 'id="form-registro"' in backoffice.text
     assert "/api/operarios" in admin_script.text
     assert 'id="actividades"' in supervisor.text

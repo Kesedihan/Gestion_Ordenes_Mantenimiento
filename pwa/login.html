@@ -17,6 +17,9 @@
     label { display:block; margin:14px 0 6px; font-weight:600; }
     input { width:100%; min-height:46px; padding:10px 12px; border:1px solid #c8cfcc;
       border-radius:8px; font:inherit; }
+    .recordar { display:flex; align-items:center; gap:9px; margin-top:14px; font-weight:500; }
+    .recordar input { width:18px; min-height:18px; margin:0; accent-color:var(--verde); }
+    .ayuda { margin:8px 0 0; font-size:13px; }
     button { width:100%; min-height:48px; margin-top:20px; border:0; border-radius:8px;
       background:var(--verde); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
     button:disabled { opacity:.65; cursor:wait; }
@@ -33,10 +36,16 @@
       <label for="contrasena">Contraseña</label>
       <input id="contrasena" name="password" type="password"
         autocomplete="current-password" required>
+      <label class="recordar" for="recordarme">
+        <input id="recordarme" name="recordarme" type="checkbox">
+        Recordarme en este dispositivo
+      </label>
+      <div class="ayuda">En un dispositivo compartido, deja esta opción desmarcada.</div>
       <button id="enviar" type="submit">Iniciar sesión</button>
       <div id="mensaje" role="alert" aria-live="polite"></div>
     </form>
   </main>
+  <script src="js/auth-session.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

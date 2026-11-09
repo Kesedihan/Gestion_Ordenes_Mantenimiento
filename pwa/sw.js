@@ -1,9 +1,9 @@
 /* Service Worker: guarda la "cáscara" de la app para que abra SIN conexión.
  * Los datos (programación, cola, fotos) viven en IndexedDB, no aquí. */
-const CACHE = "sgml-v10";
+const CACHE = "sgml-v11";
 const CASCARA = [
   "./", "index.html", "login.html", "backoffice.html", "dashboard.html",
-  "supervisor.html", "programacion.html", "app.js", "js/auth.js", "js/admin.js",
+  "supervisor.html", "programacion.html", "app.js", "js/auth.js", "js/auth-session.js", "js/admin.js",
   "js/api.js", "js/dashboard.js", "js/supervisor.js", "js/programacion.js",
   "manifest.webmanifest", "icono.svg",
 ];

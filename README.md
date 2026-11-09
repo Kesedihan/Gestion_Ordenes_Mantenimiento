@@ -46,13 +46,20 @@ $env:SGML_JWT_SECRET = (python -c "import secrets; print(secrets.token_urlsafe(3
 # Crea perfiles vinculados, tareas y una programación ya publicada.
 python -m app.preparar_pruebas
 
-# Inicia la API y el frontend en http://127.0.0.1:8001
+# Inicia la API y el frontend en http://127.0.0.1:8000
 # Si la aplicación ya está activa, reutiliza su URL en lugar de iniciar otra copia.
-python -m uvicorn app.main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-Después abre <http://127.0.0.1:8001/app/login.html>. La documentación de la
-API está en <http://127.0.0.1:8001/docs>.
+Después abre <http://127.0.0.1:8000/app/login.html>. La documentación de la
+API está en <http://127.0.0.1:8000/docs>.
+
+En el login, **Recordarme en este dispositivo** conserva los tokens en ese
+navegador para volver a abrir la PWA, incluso sin conexión, después de haber
+iniciado sesión y descargado la programación. Si se deja desmarcado, los tokens
+solo duran mientras siga abierta la pestaña del navegador. No marques la opción
+en dispositivos compartidos. El access token se renueva automáticamente con
+el refresh token cuando hay conexión; el refresh token vence a los 30 días.
 
 La aplicación usa `sgml.db` y la carpeta `evidencias/` en la raíz del proyecto
 por defecto. Se pueden cambiar con `SGML_BD_URL` y `SGML_EVIDENCIAS`. Si no se
@@ -103,7 +110,7 @@ momento, no fotografías de personas ni de trabajos reales.
 
 1. Inicia sesión como `sgml.gestion`.
 2. En el tablero, selecciona **Gestión de operarios** o abre
-   <http://127.0.0.1:8001/app/backoffice.html>.
+   <http://127.0.0.1:8000/app/backoffice.html>.
 3. Revisa las tres hojas de vida, registra un operario nuevo con correo
    institucional, edita su teléfono/correo y prueba activar e inactivar.
 4. El caso de uso valida que el correo termine en el dominio institucional
@@ -113,7 +120,7 @@ momento, no fotografías de personas ni de trabajos reales.
 ### 2. Crear y publicar una programación
 
 1. Inicia sesión como `sgml.admin` y abre **Programación semanal** o
-   <http://127.0.0.1:8001/app/programacion.html>.
+   <http://127.0.0.1:8000/app/programacion.html>.
 2. La carga local ya deja publicada la próxima programación, con tareas para
    los tres operarios. También puedes crear otra programación si esa semana
    todavía no existe.
@@ -124,10 +131,11 @@ momento, no fotografías de personas ni de trabajos reales.
 
 ### 3. Probar la jornada offline-first
 
-1. Inicia sesión con cualquiera de las tres cuentas `operario.*` y pulsa
-   **Descargar mi programación**. La aplicación identifica al operario por su
-   cuenta. Para ver las tareas publicadas, elige una fecha de la semana
-   programada.
+1. Inicia sesión con cualquiera de las tres cuentas `operario.*`; si quieres
+   reabrir la PWA después de cerrar el navegador, marca **Recordarme en este
+   dispositivo**. Pulsa **Actualizar mi programación**. La aplicación
+   identifica al operario por su cuenta. Para ver las tareas publicadas, elige
+   una fecha de la semana programada.
 2. Registra entrada, fotos y actividad. En un teléfono, la captura usa la
    cámara; en escritorio se puede escoger una imagen desde el disco.
 3. Para simular desconexión, abre las herramientas de desarrollador del
@@ -142,7 +150,7 @@ momento, no fotografías de personas ni de trabajos reales.
 ### 4. Revisar como Supervisor
 
 1. Inicia sesión como `sgml.supervisor` y abre
-   <http://127.0.0.1:8001/app/supervisor.html>.
+   <http://127.0.0.1:8000/app/supervisor.html>.
 2. En la fecha actual hay actividades finalizadas con evidencias **ANTES**,
    **DURANTE** y **DESPUÉS**.
 3. Acepta una. Rechaza la otra escribiendo una observación; el rechazo sin
@@ -164,7 +172,7 @@ momento, no fotografías de personas ni de trabajos reales.
 ### 5. Consultar el tablero
 
 1. Inicia sesión como `sgml.gestion` y abre
-   <http://127.0.0.1:8001/app/dashboard.html>.
+   <http://127.0.0.1:8000/app/dashboard.html>.
 2. Selecciona la fecha actual para ver una jornada, actividades, estados e
    imágenes de ejemplo. Una alerta de reloj está sembrada intencionalmente para
    que se vea el indicador.
@@ -372,14 +380,16 @@ cambiarla no obliga a modificar el caso de uso.
 
 ## Limitaciones conocidas
 
-- Se emiten access tokens de 15 minutos y refresh tokens de 30 días, pero el
-  endpoint para renovar tokens aún no está implementado.
+- Para el primer inicio de sesión y la primera descarga de programación se
+  requiere conexión. El modo **Recordarme** permite reabrir la sesión local en
+  ese mismo navegador; no permite autenticar una cuenta nueva sin conexión.
+- El refresh token vence a los 30 días. Si vence mientras no hay conexión, la
+  PWA puede abrirse y seguir guardando trabajo local si conserva la sesión
+  recordada, pero será necesario iniciar sesión con red antes de sincronizar.
 - La PWA consulta su programación y sincroniza eventos/evidencias con el JWT;
   la API verifica que el ID de la carga coincida con el operario vinculado al
   token. Los endpoints de Hojas de vida todavía necesitan autorización por
   rol en el servidor. No exponerlos públicamente sin completarla.
-- El login requiere conexión, y no hay renovación automática del access token.
-  Cuando vence, el usuario debe iniciar sesión otra vez para sincronizar.
 - La alerta de reloj muestra el total histórico informado por la API; no hay
   desglose por la fecha elegida en el tablero.
 - Las evidencias preparadas para el recorrido son imágenes gráficas

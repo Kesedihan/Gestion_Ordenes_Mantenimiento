@@ -7,9 +7,7 @@
  */
 "use strict";
 
-const operarioId = Number(localStorage.getItem("sgml-operario-id"));
-const accessToken = localStorage.getItem("sgml-access-token");
-const encabezadosAuth = () => ({ Authorization: `Bearer ${accessToken}` });
+const operarioId = Number(SGMLAuth.obtener("sgml-operario-id"));
 
 // ============================== MODELO (IndexedDB) ==============================
 const Almacen = (() => {
@@ -84,7 +82,7 @@ async function marcarProgreso(clave, cambios) {
 // ============================== SINCRONIZACIÓN (E2) ==============================
 let sincronizando = false;
 async function sincronizar() {
-  if (sincronizando || !operarioId || !accessToken || !navigator.onLine) return pintarRed();
+  if (sincronizando || !operarioId || !SGMLAuth.tieneSesion() || !navigator.onLine) return pintarRed();
   sincronizando = true;
   const avisos = [];
   try {
@@ -97,8 +95,8 @@ async function sincronizar() {
         Object.entries({ evento_id: f.id, operario_id: operarioId, actividad_id: f.actividad_id,
           momento: f.momento, tomada_en: f.tomada_en }).forEach(([k, v]) => datos.append(k, v));
         datos.append("foto", f.blob, `${f.momento}.jpg`);
-        const r = await fetch("/api/jornada/evidencias", {
-          method: "POST", headers: encabezadosAuth(), body: datos,
+        const r = await SGMLAuth.fetchAutenticado("/api/jornada/evidencias", {
+          method: "POST", body: datos,
         });
         if (r.status === 401) {
           window.location.assign("/app/login.html");
@@ -109,10 +107,9 @@ async function sincronizar() {
       } else {
         const lote = [];
         while (i < cola.length && cola[i].clase === "evento") lote.push(cola[i++]);
-        const r = await fetch("/api/jornada/sincronizar", {
-          method: "POST", headers: {
-            ...encabezadosAuth(), "Content-Type": "application/json",
-          },
+        const r = await SGMLAuth.fetchAutenticado("/api/jornada/sincronizar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ operario_id: operarioId,
             eventos: lote.map(({ id, tipo, hora_dispositivo, datos }) => ({ id, tipo, hora_dispositivo, datos })) }),
         });
@@ -344,25 +341,19 @@ document.getElementById("cerrar-sesion").addEventListener("click", async () => {
     "Se conservarán en este dispositivo, pero debes volver a iniciar sesión para enviarlos. ¿Cerrar sesión?",
   )) return;
 
-  [
-    "sgml-access-token",
-    "sgml-refresh-token",
-    "sgml-rol",
-    "sgml-operario-id",
-    "sgml-nombre-usuario",
-  ].forEach((clave) => localStorage.removeItem(clave));
+  SGMLAuth.limpiar();
   window.location.assign("/app/login.html");
 });
 window.addEventListener("online", () => { pintarRed(); sincronizar(); });
 window.addEventListener("offline", pintarRed);
 
 (async function iniciar() {
-  if (!operarioId || !accessToken || localStorage.getItem("sgml-rol") !== "OPERARIO") {
+  if (!operarioId || !SGMLAuth.tieneSesion() || SGMLAuth.obtener("sgml-rol") !== "OPERARIO") {
     window.location.replace("/app/login.html");
     return;
   }
   document.getElementById("nombre-operario").textContent =
-    localStorage.getItem("sgml-nombre-usuario") || "Operario";
+    SGMLAuth.obtener("sgml-nombre-usuario") || "Operario";
   document.getElementById("fecha").value = hoy();
   await Almacen.abrir();
   pintarRed();

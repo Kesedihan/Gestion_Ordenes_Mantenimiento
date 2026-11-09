@@ -10,6 +10,14 @@ const DESTINOS_POR_ROL = {
 const formulario = document.getElementById("form-login");
 const boton = document.getElementById("enviar");
 const mensaje = document.getElementById("mensaje");
+const recordar = document.getElementById("recordarme");
+
+recordar.checked = SGMLAuth.recordar();
+
+if (SGMLAuth.tieneSesion()) {
+  const destino = DESTINOS_POR_ROL[SGMLAuth.obtener("sgml-rol")];
+  if (destino) window.location.replace(destino);
+}
 
 formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
@@ -41,18 +49,10 @@ formulario.addEventListener("submit", async (evento) => {
       return;
     }
 
-    localStorage.setItem("sgml-access-token", sesion.access_token);
-    localStorage.setItem("sgml-refresh-token", sesion.refresh_token);
-    localStorage.setItem("sgml-rol", sesion.rol);
-    localStorage.setItem("sgml-nombre-usuario", sesion.nombre_usuario);
-    if (sesion.rol === "OPERARIO") {
-      localStorage.setItem("sgml-operario-id", String(sesion.operario_id));
-    } else {
-      localStorage.removeItem("sgml-operario-id");
-    }
+    SGMLAuth.guardar(sesion, recordar.checked);
     window.location.assign(destino);
   } catch {
-    mensaje.textContent = "No hay conexión con el servidor. Conéctate para iniciar sesión.";
+    mensaje.textContent = "No fue posible iniciar sesión. Para entrar sin conexión, inicia sesión y descarga tu programación cuando tengas red.";
   } finally {
     boton.disabled = false;
   }

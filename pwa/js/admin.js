@@ -5,8 +5,7 @@ const ETIQUETAS_ROL = {
   ADMINISTRADOR: "Administrador",
   ADMINISTRATIVO: "Administrativo",
 };
-const token = localStorage.getItem("sgml-access-token");
-const rol = localStorage.getItem("sgml-rol");
+const rol = SGMLAuth.obtener("sgml-rol");
 const mensaje = document.getElementById("mensaje");
 const filasOperarios = document.getElementById("filas-operarios");
 const formularioRegistro = document.getElementById("form-registro");
@@ -34,11 +33,10 @@ function escaparHTML(valor) {
 
 async function solicitar(ruta, opciones = {}) {
   const headers = new Headers(opciones.headers || {});
-  headers.set("Authorization", `Bearer ${token}`);
   if (opciones.body && !(opciones.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
-  const respuesta = await fetch(ruta, { ...opciones, headers });
+  const respuesta = await SGMLAuth.fetchAutenticado(ruta, { ...opciones, headers });
   const tipoContenido = respuesta.headers.get("content-type") || "";
   const resultado = tipoContenido.includes("application/json")
     ? await respuesta.json()
@@ -201,13 +199,12 @@ const accionesOperario = {
 };
 
 function cerrarSesion() {
-  ["sgml-access-token", "sgml-refresh-token", "sgml-rol"].forEach((clave) =>
-    localStorage.removeItem(clave));
+  SGMLAuth.limpiar();
   window.location.assign("/app/login.html");
 }
 
 function iniciarBackoffice() {
-  if (!token || !ROLES_ADMINISTRATIVOS.has(rol)) {
+  if (!SGMLAuth.tieneSesion() || !ROLES_ADMINISTRATIVOS.has(rol)) {
     document.querySelector("main").innerHTML =
       '<section class="tarjeta"><h2>Acceso no disponible</h2>' +
       '<p>Esta vista es para Administradores y Administrativos. Inicia sesión con un rol autorizado.</p>' +

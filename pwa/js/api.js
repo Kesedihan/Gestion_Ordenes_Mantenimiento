@@ -1,34 +1,28 @@
 "use strict";
 
 window.SGML = (() => {
-  const TOKEN_KEY = "sgml-access-token";
-  const ROLE_KEY = "sgml-rol";
-
   function rolActual() {
-    return localStorage.getItem(ROLE_KEY);
+    return SGMLAuth.obtener("sgml-rol");
   }
 
   function exigirRol(roles) {
-    if (localStorage.getItem(TOKEN_KEY) && roles.includes(rolActual())) return true;
+    if (SGMLAuth.tieneSesion() && roles.includes(rolActual())) return true;
     window.location.replace("/app/login.html");
     return false;
   }
 
   function cerrarSesion() {
-    ["sgml-access-token", "sgml-refresh-token", ROLE_KEY].forEach((clave) =>
-      localStorage.removeItem(clave));
+    SGMLAuth.limpiar();
     window.location.assign("/app/login.html");
   }
 
   async function solicitar(ruta, opciones = {}) {
     const headers = new Headers(opciones.headers || {});
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (token) headers.set("Authorization", `Bearer ${token}`);
     if (opciones.body && !(opciones.body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
     }
 
-    const respuesta = await fetch(ruta, { ...opciones, headers });
+    const respuesta = await SGMLAuth.fetchAutenticado(ruta, { ...opciones, headers });
     const tipoContenido = respuesta.headers.get("content-type") || "";
     const cuerpo = tipoContenido.includes("application/json")
       ? await respuesta.json()
@@ -49,9 +43,7 @@ window.SGML = (() => {
   }
 
   async function obtenerImagen(ruta) {
-    const respuesta = await fetch(ruta, {
-      headers: { Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}` },
-    });
+    const respuesta = await SGMLAuth.fetchAutenticado(ruta);
     if (respuesta.status === 401) {
       cerrarSesion();
       throw new Error("La sesión expiró; inicia sesión nuevamente.");
