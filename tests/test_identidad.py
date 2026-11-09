@@ -122,6 +122,9 @@ def test_login_y_script_se_publican_desde_la_pwa(identidad):
     assert auth_session.status_code == 200
     assert "/api/auth/refresh" in auth_session.text
     assert 'id="form-registro"' in backoffice.text
+    assert 'id="agregar-formacion"' in backoffice.text
+    assert 'id="agregar-experiencia"' in backoffice.text
+    assert 'id="dialogo-perfil"' in backoffice.text
     assert "/api/operarios" in admin_script.text
     assert 'id="actividades"' in supervisor.text
     assert 'id="jornadas"' in dashboard.text

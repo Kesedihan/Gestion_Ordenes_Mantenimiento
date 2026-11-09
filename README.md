@@ -112,8 +112,14 @@ momento, no fotografías de personas ni de trabajos reales.
 2. En el tablero, selecciona **Gestión de operarios** o abre
    <http://127.0.0.1:8000/app/backoffice.html>.
 3. Revisa las tres hojas de vida, registra un operario nuevo con correo
-   institucional, edita su teléfono/correo y prueba activar e inactivar.
-4. El caso de uso valida que el correo termine en el dominio institucional
+   institucional, especialidades, formación y experiencia laboral. Los botones
+   **Agregar formación** y **Agregar experiencia** permiten guardar varios
+   registros por operario; el sistema calcula los años de experiencia sumando
+   los meses de cada empleo.
+4. En la tabla, usa **Ver hoja de vida** para consultar formación,
+   especialidades y experiencia. También puedes editar teléfono/correo y
+   activar o inactivar el perfil.
+5. El caso de uso valida que el correo termine en el dominio institucional
    configurado, `@mantenimiento.com.co` por defecto. El formato también se
    valida en la entidad y en el formulario.
 

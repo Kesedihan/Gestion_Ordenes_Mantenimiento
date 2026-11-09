@@ -55,6 +55,12 @@
       border-radius:8px; }
     .especialidades { display:flex; flex-wrap:wrap; gap:8px 16px; }
     .especialidades label { display:flex; align-items:center; gap:6px; font-size:14px; }
+    .seccion-repetible { margin-top:16px; }
+    .seccion-repetible > .encabezado-tarjeta { margin:0 0 10px; }
+    .lista-repetible { display:grid; gap:10px; }
+    .fila-repetible { padding:12px; border:1px solid var(--borde); border-radius:8px; }
+    .fila-repetible .rejilla { grid-template-columns:repeat(4,minmax(0,1fr)); align-items:end; }
+    .fila-repetible .acciones-fila { justify-content:flex-end; margin-top:10px; }
     .acciones-form { display:flex; gap:8px; margin-top:16px; }
     .tabla-contenedor { overflow-x:auto; }
     table { width:100%; border-collapse:collapse; text-align:left; font-size:14px; }
@@ -69,6 +75,7 @@
     .vacio { padding:20px; text-align:center; color:var(--gris); }
     dialog { width:min(440px,calc(100% - 28px)); padding:0; border:0; border-radius:10px;
       box-shadow:0 12px 40px #0004; }
+    #dialogo-perfil { width:min(700px,calc(100% - 28px)); max-height:85vh; overflow:auto; }
     dialog::backdrop { background:#14201c88; }
     .dialogo-contenido { padding:20px; }
     .dialogo-contenido h2 { margin-bottom:6px; }
@@ -77,10 +84,12 @@
       header { padding:12px 16px; }
       .acciones-fila { flex-wrap:wrap; justify-content:flex-end; }
       .rejilla { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .fila-repetible .rejilla { grid-template-columns:repeat(2,minmax(0,1fr)); }
       table { min-width:850px; }
     }
     @media (max-width:480px) {
       .rejilla { grid-template-columns:1fr; }
+      .fila-repetible .rejilla { grid-template-columns:1fr; }
       .tarjeta { padding:14px; }
       .encabezado-tarjeta { align-items:flex-start; flex-direction:column; }
     }
@@ -149,6 +158,26 @@
             <label><input type="checkbox" name="especialidades" value="PLOMERIA"> Plomería</label>
           </div>
         </fieldset>
+        <section class="seccion-repetible" aria-labelledby="titulo-formacion">
+          <div class="encabezado-tarjeta">
+            <div>
+              <h2 id="titulo-formacion">Formación</h2>
+              <div class="ayuda">Opcional. Puedes registrar varios estudios.</div>
+            </div>
+            <button class="secundario" id="agregar-formacion" type="button">Agregar formación</button>
+          </div>
+          <div class="lista-repetible" id="lista-formacion"></div>
+        </section>
+        <section class="seccion-repetible" aria-labelledby="titulo-experiencia">
+          <div class="encabezado-tarjeta">
+            <div>
+              <h2 id="titulo-experiencia">Experiencia laboral</h2>
+              <div class="ayuda">Opcional. Los años de experiencia se calculan sumando los meses.</div>
+            </div>
+            <button class="secundario" id="agregar-experiencia" type="button">Agregar experiencia</button>
+          </div>
+          <div class="lista-repetible" id="lista-experiencia"></div>
+        </section>
         <div class="acciones-form">
           <button id="registrar" type="submit">Guardar operario</button>
         </div>
@@ -168,7 +197,7 @@
           <thead>
             <tr>
               <th>ID</th><th>Operario</th><th>Documento</th><th>Contacto</th>
-              <th>Fecha de ingreso</th><th>Estado</th><th>Acciones</th>
+              <th>Fecha de ingreso</th><th>Experiencia</th><th>Estado</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody id="filas-operarios"></tbody>
@@ -198,6 +227,62 @@
       </div>
     </form>
   </dialog>
+  <dialog id="dialogo-perfil" aria-labelledby="titulo-perfil">
+    <div class="dialogo-contenido">
+      <h2 id="titulo-perfil">Perfil del operario</h2>
+      <p class="ayuda" id="nombre-perfil"></p>
+      <div id="detalle-perfil"></div>
+      <div class="acciones-form">
+        <button class="secundario" id="cerrar-perfil" type="button">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
+  <template id="plantilla-formacion">
+    <div class="fila-repetible">
+      <div class="rejilla">
+        <div class="campo">
+          <label>Nivel *</label>
+          <input data-campo="nivel" maxlength="40" required>
+        </div>
+        <div class="campo">
+          <label>Título *</label>
+          <input data-campo="titulo" maxlength="120" required>
+        </div>
+        <div class="campo">
+          <label>Institución *</label>
+          <input data-campo="institucion" maxlength="120" required>
+        </div>
+        <div class="campo">
+          <label>Año de finalización</label>
+          <input data-campo="anio_fin" type="number" min="0" step="1">
+        </div>
+      </div>
+      <div class="acciones-fila">
+        <button class="peligro" data-quitar type="button">Quitar formación</button>
+      </div>
+    </div>
+  </template>
+  <template id="plantilla-experiencia">
+    <div class="fila-repetible">
+      <div class="rejilla">
+        <div class="campo">
+          <label>Empresa *</label>
+          <input data-campo="empresa" maxlength="120" required>
+        </div>
+        <div class="campo">
+          <label>Cargo *</label>
+          <input data-campo="cargo" maxlength="80" required>
+        </div>
+        <div class="campo">
+          <label>Duración (meses) *</label>
+          <input data-campo="meses" type="number" min="0" step="1" required>
+        </div>
+      </div>
+      <div class="acciones-fila">
+        <button class="peligro" data-quitar type="button">Quitar experiencia</button>
+      </div>
+    </div>
+  </template>
   <script src="js/auth-session.js"></script>
   <script src="js/admin.js"></script>
 </body>

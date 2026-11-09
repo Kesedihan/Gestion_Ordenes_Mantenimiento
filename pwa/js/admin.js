@@ -11,8 +11,12 @@ const filasOperarios = document.getElementById("filas-operarios");
 const formularioRegistro = document.getElementById("form-registro");
 const formularioContacto = document.getElementById("form-contacto");
 const dialogoContacto = document.getElementById("dialogo-contacto");
+const listaFormacion = document.getElementById("lista-formacion");
+const listaExperiencia = document.getElementById("lista-experiencia");
+const dialogoPerfil = document.getElementById("dialogo-perfil");
 let operarios = [];
 let operarioEnEdicion = null;
+let secuenciaFila = 0;
 
 function mostrarMensaje(texto, tipo = "ok") {
   mensaje.textContent = texto;
@@ -23,6 +27,60 @@ function mostrarMensaje(texto, tipo = "ok") {
 function limpiarMensaje() {
   mensaje.textContent = "";
   mensaje.hidden = true;
+}
+
+function agregarFila(contenedor, plantillaId, prefijo) {
+  const fila = document.getElementById(plantillaId).content.firstElementChild.cloneNode(true);
+  const numero = ++secuenciaFila;
+  fila.querySelectorAll("[data-campo]").forEach((entrada) => {
+    const id = `${prefijo}-${numero}-${entrada.dataset.campo}`;
+    entrada.id = id;
+    entrada.parentElement.querySelector("label").htmlFor = id;
+  });
+  fila.querySelector("[data-quitar]").addEventListener("click", () => fila.remove());
+  contenedor.append(fila);
+}
+
+function recopilarFilas(contenedor, camposNumericos) {
+  return Array.from(contenedor.children, (fila) => {
+    const registro = {};
+    fila.querySelectorAll("[data-campo]").forEach((entrada) => {
+      const valor = entrada.value.trim();
+      registro[entrada.dataset.campo] = camposNumericos.has(entrada.dataset.campo)
+        ? valor === "" ? null : Number(valor)
+        : valor;
+    });
+    return registro;
+  });
+}
+
+function mostrarPerfil(id) {
+  const operario = operarios.find((item) => item.id === id);
+  if (!operario) {
+    mostrarMensaje("No se encontró el operario seleccionado.", "error");
+    return;
+  }
+  document.getElementById("nombre-perfil").textContent =
+    `${operario.nombre_completo} · Documento ${operario.documento}`;
+  const formacion = operario.formacion.length
+    ? `<ul>${operario.formacion.map((item) => `
+        <li><strong>${escaparHTML(item.titulo)}</strong> — ${escaparHTML(item.nivel)},
+          ${escaparHTML(item.institucion)}          ${item.anio_fin !== null && item.anio_fin !== undefined
+            ? ` (${escaparHTML(item.anio_fin)})`
+            : ""}</li>`).join("")}</ul>`
+    : "<p>Sin formación registrada.</p>";
+  const experiencia = operario.experiencia.length
+    ? `<ul>${operario.experiencia.map((item) => `
+        <li><strong>${escaparHTML(item.cargo)}</strong> — ${escaparHTML(item.empresa)},
+          ${escaparHTML(item.meses)} meses</li>`).join("")}</ul>`
+    : "<p>Sin experiencia registrada.</p>";
+  document.getElementById("detalle-perfil").innerHTML = `
+    <p><strong>Especialidades:</strong> ${operario.especialidades
+      .map(escaparHTML).join(", ")}</p>
+    <p><strong>Experiencia total:</strong> ${escaparHTML(operario.anios_experiencia)} años</p>
+    <h3>Formación</h3>${formacion}
+    <h3>Experiencia laboral</h3>${experiencia}`;
+  dialogoPerfil.showModal();
 }
 
 function escaparHTML(valor) {
@@ -64,8 +122,11 @@ function dibujarOperarios() {
       <td>${escaparHTML(operario.documento)}</td>
       <td>${escaparHTML(operario.telefono)}<br>${escaparHTML(operario.correo_institucional)}</td>
       <td>${escaparHTML(operario.fecha_ingreso)}</td>
+      <td>${escaparHTML(operario.anios_experiencia)} años</td>
       <td><span class="estado ${claseEstado}">${textoEstado}</span></td>
       <td><div class="acciones-fila">
+        <button class="secundario" type="button" data-accion="perfil"
+          data-id="${escaparHTML(operario.id)}">Ver hoja de vida</button>
         <button class="secundario" type="button" data-accion="editar"
           data-id="${escaparHTML(operario.id)}">Editar contacto</button>
         <button class="${activo ? "peligro" : "secundario"}" type="button"
@@ -115,8 +176,8 @@ async function registrarOperario(evento) {
     correo_institucional: datos.get("correo_institucional").trim(),
     fecha_ingreso: datos.get("fecha_ingreso"),
     especialidades,
-    formacion: [],
-    experiencia: [],
+    formacion: recopilarFilas(listaFormacion, new Set(["anio_fin"])),
+    experiencia: recopilarFilas(listaExperiencia, new Set(["meses"])),
   };
   const boton = document.getElementById("registrar");
   boton.disabled = true;
@@ -125,6 +186,8 @@ async function registrarOperario(evento) {
       method: "POST",
       body: JSON.stringify(operario),
     });
+    listaFormacion.replaceChildren();
+    listaExperiencia.replaceChildren();
     formularioRegistro.reset();
     mostrarMensaje("Operario registrado correctamente.");
     await cargarOperarios();
@@ -193,6 +256,7 @@ async function cambiarEstado(id, activo) {
 }
 
 const accionesOperario = {
+  perfil: (id) => mostrarPerfil(id),
   editar: (id) => abrirEdicion(id),
   activar: (id) => cambiarEstado(id, true),
   inactivar: (id) => cambiarEstado(id, false),
@@ -218,6 +282,10 @@ function iniciarBackoffice() {
     .addEventListener("click", cargarOperarios);
   document.getElementById("cerrar-sesion").addEventListener("click", cerrarSesion);
   formularioRegistro.addEventListener("submit", registrarOperario);
+  document.getElementById("agregar-formacion").addEventListener("click", () =>
+    agregarFila(listaFormacion, "plantilla-formacion", "formacion"));
+  document.getElementById("agregar-experiencia").addEventListener("click", () =>
+    agregarFila(listaExperiencia, "plantilla-experiencia", "experiencia"));
   formularioContacto.addEventListener("submit", guardarContacto);
   ["correo", "correo-contacto"].forEach((id) => {
     document.getElementById(id).addEventListener("input", (evento) => {
@@ -226,6 +294,9 @@ function iniciarBackoffice() {
   });
   document.getElementById("cancelar-contacto").addEventListener("click", () => {
     dialogoContacto.close();
+  });
+  document.getElementById("cerrar-perfil").addEventListener("click", () => {
+    dialogoPerfil.close();
   });
   dialogoContacto.addEventListener("close", () => {
     operarioEnEdicion = null;

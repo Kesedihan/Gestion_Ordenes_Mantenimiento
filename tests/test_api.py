@@ -82,10 +82,42 @@ def test_m1_crud_hoja_de_vida(entorno):
     cliente, op, *_ = entorno
     hoja = cliente.get(f"/api/operarios/{op}").json()
     assert hoja["nombre_completo"] == "Carlos Perdomo" and hoja["anios_experiencia"] == 2.5
+    assert hoja["formacion"] == [{
+        "nivel": "Técnico", "titulo": "Piscinas", "institucion": "SENA", "anio_fin": 2022,
+    }]
+    assert hoja["experiencia"] == [{"empresa": "Aqua", "cargo": "Piscinero", "meses": 30}]
     r = cliente.put(f"/api/operarios/{op}/contacto",
                     json={"telefono": "3000000000", "correo_institucional": "c.perdomo@mantenimiento.com.co"})
     assert r.status_code == 200 and r.json()["telefono"] == "3000000000"
     assert cliente.patch(f"/api/operarios/{op}/estado", json={"activo": False}).json()["estado"] == "INACTIVO"
+
+
+def test_m1_registra_formacion_y_experiencia_desde_el_perfil(entorno):
+    cliente, *_ = entorno
+    datos = {
+        **OPERARIO,
+        "documento": "1075001999",
+        "correo_institucional": "prueba@mantenimiento.com.co",
+        "formacion": [
+            {"nivel": "Tecnólogo", "titulo": "Mantenimiento", "institucion": "SENA", "anio_fin": 2020},
+            {"nivel": "Curso", "titulo": "Seguridad laboral", "institucion": "Centro de formación"},
+        ],
+        "experiencia": [
+            {"empresa": "Servicios Uno", "cargo": "Técnico", "meses": 24},
+            {"empresa": "Servicios Dos", "cargo": "Auxiliar", "meses": 18},
+        ],
+    }
+
+    respuesta = cliente.post("/api/operarios", json=datos)
+
+    assert respuesta.status_code == 201
+    perfil = respuesta.json()
+    assert perfil["formacion"] == [
+        {**datos["formacion"][0]},
+        {**datos["formacion"][1], "anio_fin": None},
+    ]
+    assert perfil["experiencia"] == datos["experiencia"]
+    assert perfil["anios_experiencia"] == 3.5
 
 
 def test_m1_reglas_de_negocio(entorno):
