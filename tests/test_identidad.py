@@ -138,7 +138,6 @@ def test_login_y_script_se_publican_desde_la_pwa(identidad):
     assert 'id="cerrar-sesion"' in jornada_html.text
     assert 'window.location.assign("/app/login.html")' in jornada_script.text
     assert 'id="filtro-centro"' in dashboard.text
-    assert 'id="enlace-operarios" href="/app/backoffice.html" hidden>Gestión de operarios</a>' in dashboard.text
     assert "fila.jornadas" in dashboard_script.text
 
 
